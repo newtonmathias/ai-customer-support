@@ -3,15 +3,57 @@ import { useChat } from "ai/react";
 import { MessageItem } from "./message-item";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useEffect, useRef } from "react";
+
+const samples = [
+  {
+    id: 1,
+    sample:
+      "Hi there! I'm having trouble connecting my WonderWidget Pro to my Wi-Fi network.",
+  },
+  {
+    id: 2,
+    sample:
+      "My WonderWidget Pro app keeps crashing whenever I try to open it. How can I fix this issue?",
+  },
+  {
+    id: 3,
+    sample:
+      "I'm interested in learning more about the routines I can set up with my WonderWidget Pro. Can you provide some examples?",
+  },
+  {
+    id: 4,
+    sample:
+      "Is there a way to reset my WonderWidget Pro to its factory settings? I'm experiencing some issues and want to start fresh.",
+  },
+];
 
 function ChatBox() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
-    useChat();
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+    setInput,
+  } = useChat();
   const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 sm:px-6">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      <div
+        className="flex-1 overflow-y-auto px-4 py-3 space-y-4 sm:px-6"
+        ref={scrollRef}
+      >
         {messages.map((message) => (
           <MessageItem key={message.id} message={message} />
         ))}
@@ -46,30 +88,24 @@ function ChatBox() {
             </p>
 
             <div className="grid grid-cols-2 gap-2 pt-4 mt-4">
-              <p className="text-gray-700 italic p-2 border rounded-md text-sm">
-                "Hi there! I'm having trouble connecting my WonderWidget Pro to
-                my Wi-Fi network."
-              </p>
-              <p className="text-gray-700 italic p-2 border rounded-md text-sm">
-                "My WonderWidget Pro app keeps crashing whenever I try to open
-                it. How can I fix this issue?"
-              </p>
-              <p className="text-gray-700 italic p-2 border rounded-md text-sm">
-                "I'm interested in learning more about the routines I can set up
-                with my WonderWidget Pro. Can you provide some examples?"
-              </p>
-              <p className="text-gray-700 italic p-2 border rounded-md text-sm">
-                "Is there a way to reset my WonderWidget Pro to its factory
-                settings? I'm experiencing some issues and want to start fresh."
-              </p>
+              {samples.map((sample) => (
+                <button
+                  type="submit"
+                  onClick={() => {
+                    setInput(sample.sample);
+                    handleSubmit;
+                  }}
+                  key={sample.id}
+                  className="text-gray-700 italic p-2 border rounded-md text-sm"
+                >
+                  {sample.sample}
+                </button>
+              ))}
             </div>
           </div>
         )}
       </div>
-      <form
-        onSubmit={handleSubmit}
-        className="border-t dark:border-gray-800 px-4 py-3 flex items-center gap-2 sm:px-6"
-      >
+      <div className="border-t dark:border-gray-800 px-4 py-3 flex items-center gap-2 sm:px-6">
         <Input
           value={input}
           onChange={handleInputChange}
@@ -79,8 +115,8 @@ function ChatBox() {
         <Button type="submit" size="icon" variant="outline">
           <SendIcon className="h-5 w-5" />
         </Button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }
 
